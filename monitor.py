@@ -54,8 +54,9 @@ def notify_latest_log():
         Source=SENDER,
     )
 
-
-if __name__ == '__main__':
+def run():
     while True:
         notify_latest_log()
         time.sleep(7200)
+if __name__ == '__main__':
+    run()

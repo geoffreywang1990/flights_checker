@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import requests
 #import streamlit as st
 import bs4
@@ -20,6 +22,8 @@ import os
 
 import boto3
 from botocore.exceptions import ClientError
+
+from monitor import run
 
 # config sender and receiver
 from email_config import SENDER,RECIPIENT
@@ -202,8 +206,9 @@ def NA(start,end,cur):
     #st.write('查询进度：')
     #global pgbar
     #pgbar=st.progress(0)
+    logger.info("start NA searching {}".format(date))
     while date <= end:
-        #logger.info("start searching {}".format(date))
+        #print("start NA searching {}".format(date))
         if date.weekday()==0:
             df1=df1.append(Search('LAX','XMN',date,cur,'MF'))
             #st.write(date.strftime('%A')+'完成')
@@ -758,13 +763,14 @@ def JK1():
     
 
 if __name__ == '__main__':
-
+    #thread0 = threading.Thread(target=run(), name= 'monitor')
     thread1 = threading.Thread(target=NA1,name='NAThread')
 
     #thread2 = threading.Thread(target=EU1,name='EU1Thread')
     #thread3 = threading.Thread(target=JK1,name='JKThread')
     #thread4 = threading.Thread(target=EU2,name='EU2Thread')
 #add other threads here as well
+    #thread0.start()
     thread1.start()
     #thread2.start()
     #thread3.start()
