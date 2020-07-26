@@ -16,13 +16,12 @@ import random
 import os
 #from dateutil.rrule import *
 import threading
-
-
+import os
 import boto3
 from botocore.exceptions import ClientError
 
+# config sender and receiver
 from email_config import SENDER,RECIPIENT
-# TODO config sender and receiver
 AWS_REGION = "us-east-2"
 CHARSET = "UTF-8"
 
@@ -36,7 +35,15 @@ cur='CNY'
 jk_blist=['NH921','NH959']    #these two flights is not permitted by CAAC but still sell tickets on ANA official website.
 
 
-import os
+
+import logging
+logger = logging.getLogger('flight_checker')
+hdlr = logging.FileHandler('log/flight_checker_{}.log'.format(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")))
+formatter = logging.Formatter('[%(levelname)s] [%(asctime)s] %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+logger.setLevel(logging.INFO)
+
 
 
 def notify(data):
@@ -46,8 +53,7 @@ def notify(data):
     #           """.format(data['官网购票链接'].values[0] , data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0] ))
     ticket_info = "[TICKET], Date {}, Route {} - {}, Flight {},  Price: ￥{}".format(data['日期'].values[0],data['始发机场'].values[0],data['到达机场'].values[0],data['航班号'].values[0],data['票价'].values[0])
     ticket_link = "Link: {}".format(data['官网购票链接'].values[0])
-    print(ticket_info)
-    print(ticket_link)
+    logger.info("{}\n{}".format(ticket_info, ticket_link))
 
     # The subject line for the email.
     subject = "[TICKET BOT]: {} {}".format(data['日期'].values[0], data['航班号'].values[0])
@@ -98,10 +104,9 @@ def notify(data):
         )
     # Display an error if something goes wrong.	
     except ClientError as e:
-        print(e.response['Error']['Message'])
+        logger.error(e.response['Error']['Message'])
     else:
-        print("Email sent! Message ID:"),
-        print(response['MessageId'])
+        logger.info("Email sent! Message ID: {}".format(response['MessageId']))
 
 def init_driver():
     options = webdriver.ChromeOptions()
@@ -197,7 +202,7 @@ def NA(start,end,cur):
     #global pgbar
     #pgbar=st.progress(0)
     while date <= end:
-        print("start searching {}".format(date))
+        logger.info("start searching {}".format(date))
         if date.weekday()==0:
             df1=df1.append(Search('LAX','XMN',date,cur,'MF'))
             #st.write(date.strftime('%A')+'完成')
