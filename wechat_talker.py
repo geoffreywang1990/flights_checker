@@ -1,7 +1,9 @@
 import requests
 import json
 from wechat_credential import AppID, AppSecret
+import datetime
 
+WT = WechatTalker()
 
 class WechatTalker:
     url_token = 'https://api.weixin.qq.com/cgi-bin/token?'
@@ -18,14 +20,13 @@ class WechatTalker:
                  'appid':AppID,# 这里填写上面获取到的appID
                  'secret':AppSecret,# 这里填写上面获取到的appsecret
                  }).json()
-        self.Token = res.get('access_token')
+        self.Token = (datetime.datetime.now(), res.get('access_token'))
         print(res)
 
     def get_token(self):
-        if self.Token is None:
+        if self.Token is None or datetime.datetime.now() > self.Token[0] + datetime.timedelta(minutes=115)
             self.update_token()
-        return self.Token
-
+        return self.Token[1]
 
     def send_text_msg(self, user_id, content):
         body = {
