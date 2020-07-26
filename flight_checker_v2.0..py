@@ -22,14 +22,14 @@ import ftplib
 import os
 
 def notify(data):
-    os.system("""
-              osascript -e 'display notification "{}" with title "{} {}" subtitle "{} - {} ￥{}" sound name "Frog"'
-              """.format(data['官网购票链接'].values[0] , data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0] ))
+    # os.system("""
+    #           osascript -e 'display notification "{}" with title "{} {}" subtitle "{} - {} ￥{}" sound name "Frog"'
+    #           """.format(data['官网购票链接'].values[0] , data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0] ))
     print("Date :{} Flight: {} Route: {} - {} Price: {}\n Link {}".format(data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0],data['官网购票链接'].values[0]))
 
 
-def make_clickable(url, text):
-    return f'<a target="_blank" href="{url}">{text}</a>'
+# def make_clickable(url, text):
+#     return f'<a target="_blank" href="{url}">{text}</a>'
 
 #Searching function
 def Search(dept,arrv,date,cur,ali):
@@ -55,6 +55,7 @@ def Search(dept,arrv,date,cur,ali):
     date1=str(date)
     date2=str(date.year)[:2]+str(mo)+str(da)
     date3=str(date.year)+str(mo)+str(da)
+    print("start searching {}".format(date))
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
@@ -84,6 +85,7 @@ def Search(dept,arrv,date,cur,ali):
     elem = driver.find_element_by_xpath("//*")
     source_code = elem.get_attribute("outerHTML")
     driver.quit()
+
     bs = BeautifulSoup(source_code, 'html.parser')
     a = bs.find_all('div', class_='gws-flights-results__itinerary-card-summary')
     if a==[]:
@@ -166,7 +168,6 @@ def NA(start,end,cur):
             time.sleep(random.randint(0,10)/10)
             # df1=df1.append(Search('YYZ','PEK',date,cur,'HU'))
             # time.sleep(random.randint(0,10)/10)
-            print("finished search {}".format(date))
             date=date+datetime.timedelta(days=1)
     return df1
 
