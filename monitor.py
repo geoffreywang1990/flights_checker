@@ -6,7 +6,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 # config sender and receiver
-from wechat_talker importa WT
+from wechat_talker import WT
 from email_config import SENDER, RECIPIENT, Wechat_Recipient_ID
 AWS_REGION = "us-east-2"
 CHARSET = "UTF-8"
@@ -26,7 +26,7 @@ def notify_latest_log():
     subject = "[TICKET BOT]: {}".format(latest_file)
     attachment = open(latest_file,'r')
     # The email body for recipients with non-HTML email clients.
-    body_text = attachment.read()
+    body_text = latest_file +'\n'+ attachment.read()
                 
     client = boto3.client('ses',region_name=AWS_REGION)
 

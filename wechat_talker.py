@@ -2,9 +2,11 @@ import requests
 import json
 from wechat_credential import AppID, AppSecret
 import datetime
+from threading import Lock
 
-WT = WechatTalker()
 
+
+mutex =Lock()
 class WechatTalker:
     url_token = 'https://api.weixin.qq.com/cgi-bin/token?'
     url_msg ='https://api.weixin.qq.com/cgi-bin/message/custom/send?'
@@ -20,11 +22,12 @@ class WechatTalker:
                  'appid':AppID,# 这里填写上面获取到的appID
                  'secret':AppSecret,# 这里填写上面获取到的appsecret
                  }).json()
-        self.Token = (datetime.datetime.now(), res.get('access_token'))
+        with mutex:
+            self.Token = (datetime.datetime.now(), res.get('access_token'))
         print(res)
 
     def get_token(self):
-        if self.Token is None or datetime.datetime.now() > self.Token[0] + datetime.timedelta(minutes=115)
+        if self.Token is None or datetime.datetime.now() > self.Token[0] + datetime.timedelta(minutes=115):
             self.update_token()
         return self.Token[1]
 
@@ -60,8 +63,8 @@ class WechatTalker:
             print("{} : {}".format(self.get_user_info(user_id)['nickname'], user_id))
 
 
+WT = WechatTalker()
 if __name__ == '__main__':
-    a = WechatTalker() 
-    a.get_user_list()
+    WT.get_user_list()
 
     
