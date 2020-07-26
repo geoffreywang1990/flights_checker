@@ -18,6 +18,16 @@ import os
 import threading
 import ftplib
 
+
+import os
+
+def notify(data):
+    os.system("""
+              osascript -e 'display notification "{}" with title "{} {}" subtitle "{} - {} ￥{}" sound name "Frog"'
+              """.format(data['官网购票链接'].values[0] , data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0] ))
+    print("Date :{} Flight: {} Route: {} - {} Price: {}\n Link {}".format(data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0],data['官网购票链接'].values[0]))
+
+
 def make_clickable(url, text):
     return f'<a target="_blank" href="{url}">{text}</a>'
 
@@ -90,9 +100,10 @@ def Search(dept,arrv,date,cur,ali):
             price=tag.find('div', class_='gws-flights-results__itinerary-price').text
             link=url1
             df_record = df_record.append({'日期':date1, '始发机场':dept,'到达机场':arrv,'航空公司':fl, '航班号':num1, '票价':price, '官网购票链接':link}, ignore_index=True)       
-    #global pgbar, percentage_complete,done
-    #percentage_complete = percentage_complete + done
-    #pgbar.progress(percentage_complete)
+            notify(df_record.tail(1))
+    # global pgbar, percentage_complete,done
+    # percentage_complete = percentage_complete + done
+    # pgbar.progress(percentage_complete)
     df_record['官网购票链接'] = df_record['官网购票链接'].apply(make_clickable, args = ('点击前往',))
     return df_record
 
@@ -118,43 +129,44 @@ def NA(start,end,cur):
             time.sleep(random.randint(0,10)/10)
             df1=df1.append(Search('SFO','PVG',date,cur,'UA'))
             time.sleep(random.randint(0,10)/10)
-            df1=df1.append(Search('YYZ','PEK',date,cur,'HU'))
-            time.sleep(random.randint(0,10)/10)
-            df1=df1.append(Search('YVR','CAN',date,cur,'CZ'))
-            time.sleep(random.randint(0,10)/10)
-            df1=df1.append(Search('YVR','CTU',date,cur,'3U'))
-            #st.write(date.strftime('%A')+'完成')
+            # df1=df1.append(Search('YYZ','PEK',date,cur,'HU'))
+            # time.sleep(random.randint(0,10)/10)
+            # df1=df1.append(Search('YVR','CAN',date,cur,'CZ'))
+            # time.sleep(random.randint(0,10)/10)
+            # df1=df1.append(Search('YVR','CTU',date,cur,'3U'))
+            # st.write(date.strftime('%A')+'完成')
             time.sleep(random.randint(0,10)/10)
             date=date+datetime.timedelta(days=1)
         elif date.weekday()==3:
             df1=df1.append(Search('SEA','PVG',date,cur,'DL'))
-            #st.write(date.strftime('%A')+'完成')
+            # st.write(date.strftime('%A')+'完成')
             date=date+datetime.timedelta(days=1)
             time.sleep(random.randint(0,10)/10)
         elif date.weekday()==4:
             df1=df1.append(Search('DTW','PVG',date,cur,'DL'))
             time.sleep(random.randint(0,10)/10)
-            df1=df1.append(Search('YVR','XMN',date,cur,'MF'))
-            #st.write(date.strftime('%A')+'完成')
+            # df1=df1.append(Search('YVR','XMN',date,cur,'MF'))
+            # st.write(date.strftime('%A')+'完成')
             time.sleep(random.randint(0,10)/10)
             date=date+datetime.timedelta(days=1)
         elif date.weekday()==5:
-            df1=df1.append(Search('YYZ','PVG',date,cur,'MU'))
-            time.sleep(random.randint(0,10)/10)
+            # df1=df1.append(Search('YYZ','PVG',date,cur,'MU'))
+            # time.sleep(random.randint(0,10)/10)
             df1=df1.append(Search('SFO','PVG',date,cur,'UA'))
-            #st.write(date.strftime('%A')+'完成')
+            # st.write(date.strftime('%A')+'完成')
             date=date+datetime.timedelta(days=1)
             time.sleep(random.randint(0,10)/10)
         else:
-            df1=df1.append(Search('YVR','PEK',date,cur,'CA'))
-            time.sleep(random.randint(0,10)/10)
+            # df1=df1.append(Search('YVR','PEK',date,cur,'CA'))
+            # time.sleep(random.randint(0,10)/10)
             df1=df1.append(Search('LAX','PEK',date,cur,'CA'))
             time.sleep(random.randint(0,10)/10)
             df1=df1.append(Search('LAX','CAN',date,cur,'CZ'))
             #st.write(date.strftime('%A')+'完成')
             time.sleep(random.randint(0,10)/10)
-            df1=df1.append(Search('YYZ','PEK',date,cur,'HU'))
-            time.sleep(random.randint(0,10)/10)
+            # df1=df1.append(Search('YYZ','PEK',date,cur,'HU'))
+            # time.sleep(random.randint(0,10)/10)
+            print("finished search {}".format(date))
             date=date+datetime.timedelta(days=1)
     return df1
 
@@ -367,12 +379,12 @@ def JK(start,end,cur):
 def NA1():
     while True:  
         df_na=NA(start,end,cur)
-        df_na.to_csv('E:\\flight\\flight_search_na.csv')
-        session = ftplib.FTP()
-        file = open('E:\\flight\\flight_search_na.csv','rb')                  # file to send
-        session.storbinary('STOR %s' % '/var/www/app/flight_search_na.csv', file)     # send the file
-        file.close()                                    # close file and FTP
-        session.quit()
+        df_na.to_csv('~/Desktop/flight_search_na.csv')
+        #session = ftplib.FTP()
+        #file = open('~/flight_search_na.csv','rb')                  # file to send
+        #session.storbinary('STOR %s' % '/var/www/app/flight_search_na.csv', file)     # send the file
+        #file.close()                                    # close file and FTP
+        #session.quit()
 
 def EU1():
     while True:  
@@ -409,27 +421,33 @@ def JK1():
     
     
 start = datetime.date.today()+ datetime.timedelta(days=1) 
-end= start + datetime.timedelta(days=97) 
+#start = datetime.date(2020,11,1)
+end= datetime.date(2020,10,28)
+#end= start + datetime.timedelta(days=80) 
 cur='CNY'
 jk_blist=['NH921','NH959']
 thread1 = threading.Thread(target=NA1,name='NAThread')
-thread2 = threading.Thread(target=EU1,name='EU1Thread')
-thread3 = threading.Thread(target=JK1,name='JKThread')
-thread4 = threading.Thread(target=EU2,name='EU2Thread')
+#thread2 = threading.Thread(target=EU1,name='EU1Thread')
+#thread3 = threading.Thread(target=JK1,name='JKThread')
+#thread4 = threading.Thread(target=EU2,name='EU2Thread')
 
 thread1.start()
-thread2.start()
-thread3.start()
-thread4.start()
 
-start = datetime.date.today()+ datetime.timedelta(days=14) 
-end= start + datetime.timedelta(days=90) 
-cur='CNY'
-jk_blist=['NH921','NH959']
-thread1 = threading.Thread(target=NA1,name='NAThread')
-thread2 = threading.Thread(target=EU1,name='EUThread')
-thread3 = threading.Thread(target=JK1,name='JKThread')
+#thread2.start()
+#thread3.start()
+#thread4.start()
 
-thread1.start()
-thread2.start()
-thread3.start()
+
+
+#
+#start = datetime.date.today()+ datetime.timedelta(days=14) 
+#end= start + datetime.timedelta(days=90) 
+#cur='CNY'
+#jk_blist=['NH921','NH959']
+#thread1 = threading.Thread(target=NA1,name='NAThread')
+#thread2 = threading.Thread(target=EU1,name='EUThread')
+#thread3 = threading.Thread(target=JK1,name='JKThread')
+#
+#thread1.start()
+#thread2.start()
+#thread3.start()
