@@ -17,6 +17,7 @@ import os
 #from dateutil.rrule import *
 import threading
 import os
+
 import boto3
 from botocore.exceptions import ClientError
 
@@ -202,7 +203,7 @@ def NA(start,end,cur):
     #global pgbar
     #pgbar=st.progress(0)
     while date <= end:
-        logger.info("start searching {}".format(date))
+        #logger.info("start searching {}".format(date))
         if date.weekday()==0:
             df1=df1.append(Search('LAX','XMN',date,cur,'MF'))
             #st.write(date.strftime('%A')+'完成')
