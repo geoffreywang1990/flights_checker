@@ -26,9 +26,10 @@ from botocore.exceptions import ClientError
 from monitor import run
 
 # config sender and receiver
-from email_config import SENDER,RECIPIENT
+from email_config import SENDER, RECIPIENT, Wechat_Recipient_ID
 AWS_REGION = "us-east-2"
 CHARSET = "UTF-8"
+from wechat_talker import WechatTalker
 
 
 
@@ -112,6 +113,10 @@ def notify(data):
         logger.error(e.response['Error']['Message'])
     else:
         logger.info("Email sent! Message ID: {}".format(response['MessageId']))
+
+    wt = WechatTalker()
+    for user_id in Wechat_Recipient_ID:
+        wt.send_text_msg(user_id, body_text)
 
 def init_driver():
     options = webdriver.ChromeOptions()

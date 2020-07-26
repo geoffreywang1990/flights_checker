@@ -5,11 +5,9 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 
-
-
-
 # config sender and receiver
-from email_config import SENDER,RECIPIENT
+from wechat_talker import WechatTalker
+from email_config import SENDER, RECIPIENT, Wechat_Recipient_ID
 AWS_REGION = "us-east-2"
 CHARSET = "UTF-8"
 
@@ -54,9 +52,13 @@ def notify_latest_log():
         Source=SENDER,
     )
 
+    wt = WechatTalker()
+    wt.send_text_msg(Wechat_Recipient_ID[0], body_text)
+
 def run():
     while True:
         notify_latest_log()
         time.sleep(7200)
+
 if __name__ == '__main__':
     run()
