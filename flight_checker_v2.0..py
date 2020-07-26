@@ -702,12 +702,14 @@ def SEA_b(start,end,cur):
 def AUAF1():
     global start,end,cur
     while True:  
+        start = max(start,datetime.date.today()+ datetime.timedelta(days=1) ) #set start and end time
         df=AUAF(start,end,cur)
         df.to_csv('~/flight_search_auaf.csv')
 
 def SEA1():
     global start,end,cur
     while True:  
+        start = max(start,datetime.date.today()+ datetime.timedelta(days=1) ) #set start and end time
         df=SEA_a(start,end,cur)
         df.to_csv('~/flight_search_sea1.csv')
 
@@ -715,6 +717,7 @@ def SEA1():
 def SEA2():
     global start,end,cur
     while True:  
+        start = max(start,datetime.date.today()+ datetime.timedelta(days=1) ) #set start and end time
         df=SEA_b(start,end,cur)
         df.to_csv('~/flight_search_sea2.csv')
 
@@ -722,12 +725,14 @@ def SEA2():
 def NA1():
     global start,end,cur
     while True:  
+        start = max(start,datetime.date.today()+ datetime.timedelta(days=1) ) #set start and end time
         df=NA(start,end,cur)
         df.to_csv('~/flight_search_na.csv')
 
 def EU1():
     global start,end,cur
     while True:  
+        start = max(start,datetime.date.today()+ datetime.timedelta(days=1) ) #set start and end time
         df=EU_p1(start,end,cur)
         df.to_csv('~/flight_search_eu1.csv')
 
@@ -735,6 +740,7 @@ def EU1():
 def EU2():
     global start,end,cur
     while True:  
+        start = max(start,datetime.date.today()+ datetime.timedelta(days=1) ) #set start and end time
         df=EU_p2(start,end,cur)
         df.to_csv('~/flight_search_eu2.csv')
 
@@ -743,6 +749,7 @@ def EU2():
 def JK1():
     global start,end,cur,jk_blist
     while True:  
+        start = max(start,datetime.date.today()+ datetime.timedelta(days=1) ) #set start and end time
         df=JK(start,end,cur)
         jk_blist=['NH921','NH959']
         df= df_jk[~df_jk['航班号'].isin(jk_blist)] 
