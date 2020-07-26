@@ -16,17 +16,74 @@ import random
 import os
 #from dateutil.rrule import *
 import threading
-import ftplib
+
+import smtplib
+from email.message import EmailMessage
+
+
+
+
+smtp_server = "smtp.gmail.com"
+smtp_port = 587  # For starttls
+sender_email = "york@gmail.com" #TODO change your email address
+password =  "*********" #TODO change your own password
+
+receiver_email = "geoffrey@gmail.com" #change your target email
+
 
 
 import os
+
 
 def notify(data):
     # os.system("""
     #           osascript -e 'display notification "{}" with title "{} {}" subtitle "{} - {} ￥{}" sound name "Frog"'
     #           """.format(data['官网购票链接'].values[0] , data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0] ))
-    print("Date :{} Flight: {} Route: {} - {} Price: {}\n Link {}".format(data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0],data['官网购票链接'].values[0]))
+    ticket_info = "[TICKET], Date {}, Route {} - {}, Flight {},  Price: ￥{}".format(data['日期'].values[0],data['始发机场'].values[0],data['到达机场'].values[0],data['航班号'].values[0],data['票价'].values[0])
+    ticket_link = "Link: {}".format(data['官网购票链接'].values[0])
+    print(ticket_info)
+    print(ticket_link)
+    server =  init_email_server()
+    msg = EmailMessage()
+    msg['Subject'] = ticket_info
+    msg['From'] = sender_email 
+    msg['To'] = receiver_email
+    msg.set_content (ticket_info + "\n" + ticket_link)
+    server.send_message (msg)
+    server.quit()
+    print('Send alert email to {}'.format(receiver_email))
 
+
+def init_email_server():
+    global sender_email, email_password, smtp_server, smtp_port
+    server = smtplib.SMTP(smtp_server,smtp_port)
+    server.ehlo() # Can be omitted
+    server.starttls()
+    server.login(sender_email, password)
+    return server
+
+
+def init_driver():
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    #options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1280x1696')
+    # options.add_argument('--user-data-dir=/tmp/user-data')
+    options.add_argument('--hide-scrollbars')
+    # options.add_argument('--enable-logging')
+    # options.add_argument('--log-level=0')
+    # options.add_argument('--v=99')
+    # options.add_argument('--single-process')
+    # options.add_argument('--data-path=/tmp/data-path')
+    options.add_argument('--ignore-certificate-errors')
+    # options.add_argument('--homedir=/tmp')
+    # options.add_argument('--disk-cache-dir=/tmp/cache-dir')
+    options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
+    # options.binary_location = "/usr/bin/chromium-browser"
+
+    driver = webdriver.Chrome(options=options)
+    return driver
 
 # def make_clickable(url, text):
 #     return f'<a target="_blank" href="{url}">{text}</a>'
@@ -55,27 +112,8 @@ def Search(dept,arrv,date,cur,ali):
     date1=str(date)
     date2=str(date.year)[:2]+str(mo)+str(da)
     date3=str(date.year)+str(mo)+str(da)
-    print("start searching {}".format(date))
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    #options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1280x1696')
-    # options.add_argument('--user-data-dir=/tmp/user-data')
-    options.add_argument('--hide-scrollbars')
-    # options.add_argument('--enable-logging')
-    # options.add_argument('--log-level=0')
-    # options.add_argument('--v=99')
-    # options.add_argument('--single-process')
-    # options.add_argument('--data-path=/tmp/data-path')
-    options.add_argument('--ignore-certificate-errors')
-    # options.add_argument('--homedir=/tmp')
-    # options.add_argument('--disk-cache-dir=/tmp/cache-dir')
-    options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
-    # options.binary_location = "/usr/bin/chromium-browser"
-
-    driver = webdriver.Chrome(options=options)
     url1=url+'flt='+dept+'.'+arrv+'.'+date1+';c:'+cur+';e:1'+';s:0;a:'+ali+';sd:1;t:f;tt:o'
+    driver = init_driver()
     driver.get(url1)
     #wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".gws-flights__flex-filler")))
     time.sleep(1)
@@ -119,6 +157,7 @@ def NA(start,end,cur):
     #global pgbar
     #pgbar=st.progress(0)
     while date <= end:
+        print("start searching {}".format(date))
         if date.weekday()==0:
             df1=df1.append(Search('LAX','XMN',date,cur,'MF'))
             #st.write(date.strftime('%A')+'完成')
@@ -659,11 +698,14 @@ def JK1():
     
 
 if __name__ == '__main__':
-    start = datetime.date.today()+ datetime.timedelta(days=1)  #set start and end time
+
+    #start = datetime.date.today()+ datetime.timedelta(days=1)  #set start and end time
+    start = datetime.date(2020,10,24)
     end= datetime.date(2020,10,28)
     cur='CNY'
     jk_blist=['NH921','NH959']    #these two flights is not permitted by CAAC but still sell tickets on ANA official website.
     thread1 = threading.Thread(target=NA1,name='NAThread')
+
     #thread2 = threading.Thread(target=EU1,name='EU1Thread')
     #thread3 = threading.Thread(target=JK1,name='JKThread')
     #thread4 = threading.Thread(target=EU2,name='EU2Thread')
@@ -672,3 +714,4 @@ if __name__ == '__main__':
     #thread2.start()
     #thread3.start()
     #thread4.start()
+
