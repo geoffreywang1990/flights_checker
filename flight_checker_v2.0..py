@@ -17,25 +17,30 @@ import os
 #from dateutil.rrule import *
 import threading
 
-import smtplib
-from email.message import EmailMessage
+
+import boto3
+from botocore.exceptions import ClientError
+
+from email_config import SENDER,RECIPIENT
+# TODO config sender and receiver
+AWS_REGION = "us-east-2"
+CHARSET = "UTF-8"
 
 
 
-
-smtp_server = "smtp.gmail.com"
-smtp_port = 587  # For starttls
-sender_email = "york@gmail.com" #TODO change your email address
-password =  "*********" #TODO change your own password
-
-receiver_email = "geoffrey@gmail.com" #change your target email
-
+start = datetime.date.today()+ datetime.timedelta(days=1)  #set start and end time
+end= datetime.date(2020,10,1)
+#start = datetime.date(2020,10,24)
+#end= datetime.date(2020,10,28)
+cur='CNY'
+jk_blist=['NH921','NH959']    #these two flights is not permitted by CAAC but still sell tickets on ANA official website.
 
 
 import os
 
 
 def notify(data):
+    # Mac system norification
     # os.system("""
     #           osascript -e 'display notification "{}" with title "{} {}" subtitle "{} - {} ￥{}" sound name "Frog"'
     #           """.format(data['官网购票链接'].values[0] , data['日期'].values[0],data['航班号'].values[0], data['始发机场'].values[0],data['到达机场'].values[0],data['票价'].values[0] ))
@@ -43,25 +48,60 @@ def notify(data):
     ticket_link = "Link: {}".format(data['官网购票链接'].values[0])
     print(ticket_info)
     print(ticket_link)
-    server =  init_email_server()
-    msg = EmailMessage()
-    msg['Subject'] = ticket_info
-    msg['From'] = sender_email 
-    msg['To'] = receiver_email
-    msg.set_content (ticket_info + "\n" + ticket_link)
-    server.send_message (msg)
-    server.quit()
-    print('Send alert email to {}'.format(receiver_email))
 
+    # The subject line for the email.
+    subject = "[TICKET BOT]: {} {}".format(data['日期'].values[0], data['航班号'].values[0])
 
-def init_email_server():
-    global sender_email, email_password, smtp_server, smtp_port
-    server = smtplib.SMTP(smtp_server,smtp_port)
-    server.ehlo() # Can be omitted
-    server.starttls()
-    server.login(sender_email, password)
-    return server
+    # The email body for recipients with non-HTML email clients.
+    body_text = ("{} \n{}".format(ticket_info,ticket_link))
+                
+    # The HTML body of the email.
+    body_html = """<html>
+    <head></head>
+    <body>
+      <h1>[TICKET BOT]: {} {}</h1>
+      <h2><a href='{}'>PURCHASE LINK</a></h2>
+      <p> 
+          {}.
+      </p>
+    </body>
+    </html>""".format(data['日期'].values[0], data['航班号'].values[0], data['官网购票链接'].values[0], ticket_info)
 
+    client = boto3.client('ses',region_name=AWS_REGION)
+
+    # Try to send the email.
+    try:
+        #Provide the contents of the email.
+        response = client.send_email(
+            Destination={
+                'ToAddresses': [
+                    RECIPIENT,
+                ],
+            },
+            Message={
+                'Body': {
+                    'Html': {
+                        'Charset': CHARSET,
+                        'Data': body_html,
+                    },
+                    'Text': {
+                        'Charset': CHARSET,
+                        'Data': body_text,
+                    },
+                },
+                'Subject': {
+                    'Charset': CHARSET,
+                    'Data': subject,
+                },
+            },
+            Source=SENDER,
+        )
+    # Display an error if something goes wrong.	
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+    else:
+        print("Email sent! Message ID:"),
+        print(response['MessageId'])
 
 def init_driver():
     options = webdriver.ChromeOptions()
@@ -655,55 +695,57 @@ def SEA_b(start,end,cur):
     return df1
 
 def AUAF1():
+    global start,end,cur
     while True:  
-        df_auaf=AUAF(start,end,cur)
-        df_auaf.to_csv('E:\\flight\\flight_search_auaf.csv')  #here is the path of output csv
+        df=AUAF(start,end,cur)
+        df.to_csv('~/flight_search_auaf.csv')
 
 def SEA1():
+    global start,end,cur
     while True:  
-        df_sea1=SEA_a(start,end,cur)
-        df_sea1.to_csv('E:\\flight\\flight_search_sea_a.csv')
+        df=SEA_a(start,end,cur)
+        df.to_csv('~/flight_search_sea1.csv')
 
         
 def SEA2():
+    global start,end,cur
     while True:  
-        df_sea2=SEA_b(start,end,cur)
-        df_sea2.to_csv('E:\\flight\\flight_search_sea_b.csv')
+        df=SEA_b(start,end,cur)
+        df.to_csv('~/flight_search_sea2.csv')
 
 
 def NA1():
+    global start,end,cur
     while True:  
-        df_na=NA(start,end,cur)
-        df_na.to_csv('~/Desktop/flight_search_na.csv')
+        df=NA(start,end,cur)
+        df.to_csv('~/flight_search_na.csv')
 
 def EU1():
+    global start,end,cur
     while True:  
-        df_eu1=EU_p1(start,end,cur)
-        df_eu1.to_csv('E:\\flight\\flight_search_eu1.csv')
+        df=EU_p1(start,end,cur)
+        df.to_csv('~/flight_search_eu1.csv')
 
 
 def EU2():
+    global start,end,cur
     while True:  
-        df_eu2=EU_p2(start,end,cur)
-        df_eu2.to_csv('E:\\flight\\flight_search_eu2.csv')
+        df=EU_p2(start,end,cur)
+        df.to_csv('~/flight_search_eu2.csv')
 
         
     
 def JK1():
+    global start,end,cur,jk_blist
     while True:  
-        df_jk=JK(start,end,cur)
+        df=JK(start,end,cur)
         jk_blist=['NH921','NH959']
-        df_jk = df_jk[~df_jk['航班号'].isin(jk_blist)] 
-        df_jk.to_csv('E:\\flight\\flight_search_jk.csv')
+        df= df_jk[~df_jk['航班号'].isin(jk_blist)] 
+        df.to_csv('E:\\flight\\flight_search_jk.csv')
     
 
 if __name__ == '__main__':
 
-    #start = datetime.date.today()+ datetime.timedelta(days=1)  #set start and end time
-    start = datetime.date(2020,10,24)
-    end= datetime.date(2020,10,28)
-    cur='CNY'
-    jk_blist=['NH921','NH959']    #these two flights is not permitted by CAAC but still sell tickets on ANA official website.
     thread1 = threading.Thread(target=NA1,name='NAThread')
 
     #thread2 = threading.Thread(target=EU1,name='EU1Thread')
