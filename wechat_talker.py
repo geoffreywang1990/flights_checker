@@ -23,11 +23,11 @@ class WechatTalker:
                  'secret':AppSecret,# 这里填写上面获取到的appsecret
                  }).json()
         with mutex:
-            self.Token = (datetime.datetime.now(), res.get('access_token'))
-        print(res)
+            self.Token = datetime.datetime.now() + datetime.timedelta(seconds= res.get('expires_in'), res.get('access_token'))
+        print(self.Token)
 
     def get_token(self):
-        if self.Token is None or datetime.datetime.now() > self.Token[0] + datetime.timedelta(minutes=115):
+        if self.Token is None or datetime.datetime.now() > self.Token[0]:
             self.update_token()
         return self.Token[1]
 
