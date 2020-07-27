@@ -23,7 +23,7 @@ class WechatTalker:
                  'secret':AppSecret,# 这里填写上面获取到的appsecret
                  }).json()
         with mutex:
-            self.Token = datetime.datetime.now() + datetime.timedelta(seconds= res.get('expires_in'), res.get('access_token'))
+            self.Token = (datetime.datetime.now() + datetime.timedelta(seconds = res.get('expires_in')), res.get('access_token'))
         print(self.Token)
 
     def get_token(self):
@@ -43,6 +43,8 @@ class WechatTalker:
         res =requests.post(url=self.url_msg,params = {
                  'access_token': self.get_token()
             },data=json.dumps(body,ensure_ascii=False).encode('utf-8'))
+        print("send to user: {},\n message {}.\nres: {}".format(user_id, content, res))
+        return res
 
     def get_user_list(self):
         res =requests.post(url=self.url_user_list,params = {
