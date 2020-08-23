@@ -32,7 +32,7 @@ CHARSET = "UTF-8"
 from wechat_talker import WT
 
 
-start = datetime.date.today()+ datetime.timedelta(days=1)  #set start and end time
+start = datetime.date(2020,9,4)
 end= datetime.date(2020,10,1)
 #start = datetime.date(2020,10,24)
 #end= datetime.date(2020,10,28)
@@ -242,18 +242,23 @@ def NA(start,end,cur):
             time.sleep(random.randint(0,10)/10)
             # df1=df1.append(Search('YVR','XMN',date,cur,'MF'))
             # st.write(date.strftime('%A')+'完成')
+            df1=df1.append(Search('SFO','PVG',date,cur,'UA'))
             time.sleep(random.randint(0,10)/10)
             date=date+datetime.timedelta(days=1)
+            time.sleep(random.randint(0,10)/10)
         elif date.weekday()==5:
             # df1=df1.append(Search('YYZ','PVG',date,cur,'MU'))
             # time.sleep(random.randint(0,10)/10)
             df1=df1.append(Search('SFO','PVG',date,cur,'UA'))
+            time.sleep(random.randint(0,10)/10)
             # st.write(date.strftime('%A')+'完成')
             date=date+datetime.timedelta(days=1)
             time.sleep(random.randint(0,10)/10)
         else:
             # df1=df1.append(Search('YVR','PEK',date,cur,'CA'))
             # time.sleep(random.randint(0,10)/10)
+            df1=df1.append(Search('SFO','PVG',date,cur,'UA'))
+            time.sleep(random.randint(0,10)/10)
             df1=df1.append(Search('LAX','PEK',date,cur,'CA'))
             time.sleep(random.randint(0,10)/10)
             df1=df1.append(Search('LAX','CAN',date,cur,'CZ'))

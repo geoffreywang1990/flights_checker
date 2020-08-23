@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import subprocess
 
 import boto3
 from botocore.exceptions import ClientError
@@ -11,6 +12,10 @@ from email_config import SENDER, RECIPIENT, Wechat_Recipient_ID
 AWS_REGION = "us-east-2"
 CHARSET = "UTF-8"
 
+def tail( f, n=20 ):
+    proc = subprocess.Popen(['tail', '-n', str(n), f], stdout=subprocess.PIPE)
+    lines = proc.stdout.read()
+    return lines.decode()
 
 
 def newest(path):
@@ -24,9 +29,8 @@ def notify_latest_log():
 
     latest_file = newest('log')
     subject = "[TICKET BOT]: {}".format(latest_file)
-    attachment = open(latest_file,'r')
     # The email body for recipients with non-HTML email clients.
-    body_text = latest_file +'\n'+ attachment.read()
+    body_text = latest_file +'\n'+ tail(latest_file,10)
                 
     client = boto3.client('ses',region_name=AWS_REGION)
 
